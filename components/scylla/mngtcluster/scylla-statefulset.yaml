@@ -5,6 +5,7 @@ metadata:
   name: scylla
   labels:
     app: scylla
+    scylla-provider-version: VERSION
   namespace: nalej
 spec:
   serviceName: scylla

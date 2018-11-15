@@ -3,7 +3,7 @@
 # 
 
 # Name of the target applications to be built
-APPS=
+APPS= scylla
 
 # Target directory to store binaries and results
 TARGET=bin
@@ -32,7 +32,7 @@ LDFLAGS=-ldflags "-X main.MainVersion=${VERSION} -X main.MainCommit=${COMMIT}"
 COVERAGE_FILE=$(TARGET)/coverage.out
 
 .PHONY: all
-all: dep build test yaml image
+all: yaml
 
 .PHONY: dep
 dep:
