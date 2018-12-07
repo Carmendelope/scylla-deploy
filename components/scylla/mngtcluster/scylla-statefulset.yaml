@@ -1,28 +1,31 @@
 
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: scylla
+  name: scylladb
   labels:
-    app: scylla
+    cluster: management
+    component: scylladb
     scylla-provider-version: VERSION
   namespace: nalej
 spec:
-  serviceName: scylla
+  serviceName: scylladb
   replicas: 3
   selector:
     matchLabels:
-      app: scylla
+      cluster: management
+      component: scylladb
   template:
     metadata:
       labels:
-        app: scylla
+        cluster: management
+        component: scylladb
     spec:
       containers:
-        - name: scylla
+        - name: scylladb
           image: scylladb/scylla:2.0.0
           imagePullPolicy: IfNotPresent
-          args: ["--seeds", "scylla-0.scylla.nalej.svc.cluster.local"]
+          args: ["--seeds", "scylladb-0.scylladb.nalej.svc.cluster.local"]
           ports:
             - containerPort: 7000
               name: intra-node
@@ -68,6 +71,6 @@ spec:
           emptyDir: {}
         - name: scylla-ready-probe
           configMap:
-            name: scylla
+            name: scylladb-config
 
 
