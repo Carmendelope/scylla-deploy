@@ -68,9 +68,8 @@ spec:
               subPath: scylla.yaml
       volumes:
         - name: scylla-data
-          emptyDir: {}
+          persistentVolumeClain:
+            claimName: scylla-data
         - name: scylla-ready-probe
           configMap:
             name: scylladb-config
-
-
