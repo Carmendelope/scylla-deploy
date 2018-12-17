@@ -67,9 +67,15 @@ spec:
               mountPath: /etc/scylla/scylla.yaml
               subPath: scylla.yaml
       volumes:
-        - name: scylla-data
-          persistentVolumeClain:
-            claimName: scylla-data
         - name: scylla-ready-probe
           configMap:
             name: scylladb-config
+  volumeClaimTemplates:
+    - metadata:
+        name: scylla-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
