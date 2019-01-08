@@ -16,11 +16,11 @@ pipeline {
 
     stages {
         stage("Render YAML files") {
-            container("kubectl") { steps { stepRenderK8SYAMLFiles packagePath, appsList, params.namespace } }
+            steps { container("kubectl") { stepRenderK8SYAMLFiles packagePath, appsList, params.namespace } }
         }
         stage("Create Kubernetes resources") {
-            container("kubectl") {
-                steps {
+            steps {
+                container("kubectl") {
                     script {
                         yamlPath = "${packagePath}/bin/yaml/mngtcluster"
                         yamlList = [
@@ -34,8 +34,8 @@ pipeline {
             }
         }
         stage("Check deploy is ready") {
-            container("kubectl") {
-                steps {
+            steps {
+                container("kubectl") {
                     timeout(10) {
                         waitUntil {
                             def k8sGet = new org.daisho.k8s.Get()
