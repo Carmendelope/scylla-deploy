@@ -3,6 +3,12 @@
 def packageName = "scylla-deploy"
 def appsList = "scylla"
 def packagePath = "src/github.com/nalej/${packageName}"
+def yamlPath = "${packagePath}/bin/yaml/mngtcluster"
+def yamlList = [
+    "scylla-configmap.yaml",
+    "scylla-statefulset.yaml",
+    "scylla-service.yaml"
+]
 
 pipeline {
     agent { node { label 'k8s' } }
@@ -16,22 +22,10 @@ pipeline {
 
     stages {
         stage("Render YAML files") {
-            steps { container("kubectl") { stepRenderK8SYAMLFiles packagePath, appsList, params.namespace } }
+            steps { container("kubectl") { stepRenderK8SYAMLFiles yamlPath, yamlList, params.namespace } }
         }
         stage("Create Kubernetes resources") {
-            steps {
-                container("kubectl") {
-                    script {
-                        yamlPath = "${packagePath}/bin/yaml/mngtcluster"
-                        yamlList = [
-                            "scylla-configmap.yaml",
-                            "scylla-statefulset.yaml",
-                            "scylla-service.yaml"
-                        ]
-                        stepCreateK8SResources yamlPath, yamlList
-                    }
-                }
-            }
+            steps { container("kubectl") { stepCreateK8SResources yamlPath, yamlList } }
         }
         stage("Check deploy is ready") {
             steps {
