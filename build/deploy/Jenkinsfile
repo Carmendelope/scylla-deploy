@@ -1,5 +1,3 @@
-@Library('nalej-helpers@feature/NP-490_ci_deploy_for_integration_tests')
-
 String packageName = "scylla-deploy"
 String packagePath = "src/github.com/nalej/" + packageName
 String yamlPath = packagePath + "/bin/yaml/mngtcluster"
