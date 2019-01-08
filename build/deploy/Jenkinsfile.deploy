@@ -35,7 +35,10 @@ pipeline {
                             script {
                                 def k8sGet = new org.daisho.k8s.Get()
                                 expected = k8sGet.filterByJSONPath(params.namespace, "statefulset", "scylladb", "'{.spec.replicas}'")
+                                echo "Expected: ${expected}"
                                 ready = k8sGet.filterByJSONPath(params.namespace, "statefulset", "scylladb", "'{.status.readyReplicas}'")
+                                echo "Ready: ${ready}"
+                                echo "Result: ${ready == expected}"
                                 return (ready == expected)
                             }
                         }
