@@ -1,11 +1,6 @@
 String packageName = "scylla-deploy"
 String packagePath = "src/github.com/nalej/" + packageName
 String yamlPath = packagePath + "/bin/yaml/mngtcluster"
-String[] yamlList = [
-    "scylla-configmap.yaml",
-    "scylla-statefulset.yaml",
-    "scylla-service.yaml"
-]
 String[] appsList = [
     "scylla"
 ]
@@ -22,10 +17,10 @@ pipeline {
 
     stages {
         stage("Render YAML files") {
-            steps { container("kubectl") { stepRenderK8SYAMLFiles packagePath, yamlPath, yamlList, appsList, params.namespace } }
+            steps { container("kubectl") { stepRenderK8SYAMLFiles packagePath, yamlPath, appsList, params.namespace } }
         }
         stage("Create Kubernetes resources") {
-            steps { container("kubectl") { stepCreateK8SResources yamlPath, yamlList } }
+            steps { container("kubectl") { stepCreateK8SResources yamlPath } }
         }
         stage("Check deploy is ready") {
             steps {
