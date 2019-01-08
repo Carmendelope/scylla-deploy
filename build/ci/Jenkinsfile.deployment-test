@@ -5,7 +5,6 @@ def nsHelper = new org.daisho.k8s.Namespace()
 pipeline {
     agent { node { label 'k8s' } }
     options {
-        checkoutToSubdirectory("${packagePath}")
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
