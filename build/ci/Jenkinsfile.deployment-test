@@ -1,15 +1,5 @@
 @Library('nalej-helpers@feature/NP-490_ci_deploy_for_integration_tests')
 
-String packageName = "scylla-deploy"
-String appsList = "scylla"
-String packagePath = "src/github.com/nalej/" + packageName
-String yamlPath = packagePath + "/bin/yaml/mngtcluster"
-String[] yamlList = [
-    "scylla-configmap.yaml",
-    "scylla-statefulset.yaml",
-    "scylla-service.yaml"
-]
-
 def nsHelper = new org.daisho.k8s.Namespace()
 
 pipeline {
@@ -27,14 +17,14 @@ pipeline {
                 }
             } }
         }
-        stage("Launch scylla deploy pipeline") {
+        stage("Launch ScyllaDB deploy pipeline") {
             steps { 
                 build job: 'deploy/components/scylladb', parameters: [[$class: 'StringParameterValue', name: 'namespace', value: env.namespaceName]]
             }
         }
     }
     post {
-        always {
+        always {
             script {
                 nsHelper.deleteNamespace(env.namespaceName)
             }
