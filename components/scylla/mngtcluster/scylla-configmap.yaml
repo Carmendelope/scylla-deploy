@@ -5,7 +5,7 @@ metadata:
     cluster: management
     component: scylladb
   name: scylladb-config
-  namespace: nalej
+  namespace: __NPH_NAMESPACE
 data:
   ready-probe.sh: |
     #!/bin/bash

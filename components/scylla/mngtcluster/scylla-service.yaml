@@ -5,7 +5,7 @@ metadata:
     cluster: management
     component: scylladb
   name: scylladb
-  namespace: nalej
+  namespace: __NPH_NAMESPACE
 spec:
   selector:
     cluster: management

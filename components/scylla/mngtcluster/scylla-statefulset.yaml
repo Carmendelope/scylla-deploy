@@ -6,8 +6,8 @@ metadata:
   labels:
     cluster: management
     component: scylladb
-    scylla-provider-version: VERSION
-  namespace: nalej
+    scylla-provider-version: __NPH_VERSION
+  namespace: __NPH_NAMESPACE
 spec:
   serviceName: scylladb
   replicas: 3
@@ -25,7 +25,7 @@ spec:
         - name: scylladb
           image: scylladb/scylla:2.0.0
           imagePullPolicy: IfNotPresent
-          args: ["--seeds", "scylladb-0.scylladb.nalej.svc.cluster.local"]
+          args: ["--seeds", "scylladb-0.scylladb.__NPH_NAMESPACE.svc.cluster.local"]
           ports:
             - containerPort: 7000
               name: intra-node

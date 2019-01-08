@@ -1,0 +1,51 @@
+@Library('nalej-helpers@feature/NP-490_ci_deploy_for_integration_tests')
+
+def packageName = "scylla-deploy"
+def appsList = "scylla"
+def packagePath = "src/github.com/nalej/${packageName}"
+
+pipeline {
+    agent { node { label 'k8s' } }
+    parameters {
+        string(name: "namespace", description: "Kubernetes namespace where it will be deployed", defaultValue: "nalej")
+    }
+    options {
+        checkoutToSubdirectory("${packagePath}")
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    stages {
+        stage("Render YAML files") {
+            container("kubectl") { steps { stepRenderK8SYAMLFiles packagePath, appsList, params.namespace } }
+        }
+        stage("Create Kubernetes resources") {
+            container("kubectl") {
+                steps {
+                    script {
+                        yamlPath = "${packagePath}/bin/yaml/mngtcluster"
+                        yamlList = [
+                            "scylla-configmap.yaml",
+                            "scylla-statefulset.yaml",
+                            "scylla-service.yaml"
+                        ]
+                        stepCreateK8SResources yamlPath, yamlList
+                    }
+                }
+            }
+        }
+        stage("Check deploy is ready") {
+            container("kubectl") {
+                steps {
+                    timeout(10) {
+                        waitUntil {
+                            def k8sGet = new org.daisho.k8s.Get()
+                            expected = k8sGet.filterByJSONPath(params.namespace, "statefulset", "scylladb", "'{.spec.replicas}'")
+                            ready = k8sGet.filterByJSONPath(params.namespace, "statefulset", "scylladb", "'{.status.readyReplicas}'")
+                            return (ready == expected)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
