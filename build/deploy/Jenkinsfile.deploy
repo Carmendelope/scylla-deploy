@@ -22,10 +22,10 @@ pipeline {
 
     stages {
         stage("Render YAML files") {
-            steps { container("kubectl") { stepRenderK8SYAMLFiles yamlPath, yamlList, params.namespace } }
+            steps { container("kubectl") { stepRenderK8SYAMLFiles "${yamlPath}", yamlList, params.namespace } }
         }
         stage("Create Kubernetes resources") {
-            steps { container("kubectl") { stepCreateK8SResources yamlPath, yamlList } }
+            steps { container("kubectl") { stepCreateK8SResources "${yamlPath}", yamlList } }
         }
         stage("Check deploy is ready") {
             steps {
