@@ -38,10 +38,12 @@ pipeline {
                 container("kubectl") {
                     timeout(10) {
                         waitUntil {
-                            def k8sGet = new org.daisho.k8s.Get()
-                            expected = k8sGet.filterByJSONPath(params.namespace, "statefulset", "scylladb", "'{.spec.replicas}'")
-                            ready = k8sGet.filterByJSONPath(params.namespace, "statefulset", "scylladb", "'{.status.readyReplicas}'")
-                            return (ready == expected)
+                            script {
+                                def k8sGet = new org.daisho.k8s.Get()
+                                expected = k8sGet.filterByJSONPath(params.namespace, "statefulset", "scylladb", "'{.spec.replicas}'")
+                                ready = k8sGet.filterByJSONPath(params.namespace, "statefulset", "scylladb", "'{.status.readyReplicas}'")
+                                return (ready == expected)
+                            }
                         }
                     }
                 }
