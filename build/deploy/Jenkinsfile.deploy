@@ -1,9 +1,9 @@
 @Library('nalej-helpers@feature/NP-490_ci_deploy_for_integration_tests')
 
-String packageName = "scylla-deploy"
-String appsList = "scylla"
-String packagePath = "src/github.com/nalej/" + packageName
-String yamlPath = packagePath + "/bin/yaml/mngtcluster"
+def packageName = "scylla-deploy"
+def appsList = "scylla"
+def packagePath = "src/github.com/nalej/${packageName}"
+def yamlPath = "${packagePath}/bin/yaml/mngtcluster"
 def yamlList = [
     "scylla-configmap.yaml",
     "scylla-statefulset.yaml",
