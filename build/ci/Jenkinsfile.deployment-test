@@ -24,8 +24,10 @@ pipeline {
     }
     post {
         always {
-            script {
-                nsHelper.deleteNamespace(env.namespaceName)
+            container("kubectl") {
+                script {
+                    nsHelper.deleteNamespace(env.namespaceName)
+                }
             }
         }
     }
