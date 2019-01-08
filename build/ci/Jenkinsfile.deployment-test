@@ -29,7 +29,7 @@ pipeline {
         }
         stage("Launch scylla deploy pipeline") {
             steps { 
-                build job: 'k8s-namespace-test', parameters: [[$class: 'StringParameterValue', name: 'namespace', value: env.namespaceName]]
+                build job: 'deploy/components/scylladb', parameters: [[$class: 'StringParameterValue', name: 'namespace', value: env.namespaceName]]
             }
         }
     }
