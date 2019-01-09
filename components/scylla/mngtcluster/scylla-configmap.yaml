@@ -5,7 +5,7 @@ metadata:
     cluster: management
     component: scylladb
   name: scylladb-config
-  namespace: nalej
+  namespace: __NPH_NAMESPACE
 data:
   ready-probe.sh: |
     #!/bin/bash
@@ -65,5 +65,4 @@ data:
     partitioner: org.apache.cassandra.dht.Murmur3Partitioner
 
     commitlog_total_space_in_mb: -1
-
     experimental: true
