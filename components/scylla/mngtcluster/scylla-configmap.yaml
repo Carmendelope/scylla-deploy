@@ -65,3 +65,4 @@ data:
     partitioner: org.apache.cassandra.dht.Murmur3Partitioner
 
     commitlog_total_space_in_mb: -1
+    experimental: true

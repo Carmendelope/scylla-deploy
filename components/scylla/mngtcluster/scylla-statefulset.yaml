@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: scylladb
-          image: scylladb/scylla:2.0.0
+          image: scylladb/scylla:2.3.0
           imagePullPolicy: IfNotPresent
           args: ["--seeds", "scylladb-0.scylladb.__NPH_NAMESPACE.svc.cluster.local"]
           ports:
