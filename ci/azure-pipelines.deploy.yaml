@@ -29,20 +29,26 @@ jobs:
   steps:
   - template: misc/variables.yaml@ci_templates
 
-  - template: slack/build/start.yaml@ci_templates
-    parameters:
-      author: $(authorName)
-      repository: $(Build.Repository.Name)
-      branch: $(Build.SourceBranch)
-      commit: $(Build.SourceVersionMessage)
-      buildUrl: $(buildUrl)$(Build.BuildId)
-      slackWebhook: $(slackBuilds)
+  # - template: slack/build/start.yaml@ci_templates
+  #   parameters:
+  #     author: $(authorName)
+  #     repository: $(Build.Repository.Name)
+  #     branch: $(Build.SourceBranch)
+  #     commit: $(Build.SourceVersionMessage)
+  #     buildUrl: $(buildUrl)$(Build.BuildId)
+  #     slackWebhook: $(slackBuilds)
 
-  - template: k8s/render_yaml.yaml@ci_templates
+  - template: k8s/yaml/render.yaml@ci_templates
     parameters:
-      namespace: $(namespace)
+      namespace: "__NPH_NAMESPACE"
       componentList: $(componentList)
       dockerRegistry: $(stagingDockerRegistry)
+    
+  - template: k8s/yaml/publish.yaml@ci_templates
+    parameters:
+      yamlIdentifier: testing
+      yamlPath: dist/yaml/$(stagingDockerRegistry)
+
   
   - template: k8s/statefulsets/claim_to_emptydirs.yaml@ci_templates
     parameters:
@@ -70,12 +76,10 @@ jobs:
       platform: mngtcluster
       dockerRegistry: $(stagingDockerRegistry)
   
-  - template: k8s/resources/verify_creation.yaml@ci_templates
+  - template: templates/verify_deploy.yaml
     parameters:
       kubeconfig: $(kubeconfig)
       namespace: $(namespace)
-      resourceKind: statefulset
-      resourceName: scylladb
 
   - template: k8s/ns/delete.yaml@ci_templates
     parameters:
