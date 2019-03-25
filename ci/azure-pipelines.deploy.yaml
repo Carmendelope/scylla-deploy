@@ -31,7 +31,7 @@ jobs:
   
   - template: k8s/statefulsets/claim_to_emptydirs.yaml@ci_templates
     parameters:
-      yamlPath: $(system.defaultWorkingDirectory)/dist/yaml/mngtcluster
+      yamlPath: $(system.defaultWorkingDirectory)/dist/yaml/$(stagingDockerRegistry)/mngtcluster
       yamlFile: scylla-statefulset.yaml
     
   - task: PublishPipelineArtifact@0
