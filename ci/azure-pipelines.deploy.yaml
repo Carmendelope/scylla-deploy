@@ -43,22 +43,16 @@ jobs:
       namespace: "__NPH_NAMESPACE"
       componentList: $(componentList)
       dockerRegistry: $(stagingDockerRegistry)
-    
-  - template: k8s/yaml/publish.yaml@ci_templates
-    parameters:
-      yamlIdentifier: testing
-      yamlPath: dist/yaml/$(stagingDockerRegistry)
-
   
   - template: k8s/statefulsets/claim_to_emptydirs.yaml@ci_templates
     parameters:
       yamlPath: $(system.defaultWorkingDirectory)/dist/yaml/$(stagingDockerRegistry)/mngtcluster
       yamlFile: scylla-statefulset.yaml
     
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: testing-k8sYAMLfiles
-      targetPath: dist/yaml/$(stagingDockerRegistry)
+  - template: k8s/yaml/publish.yaml@ci_templates
+    parameters:
+      yamlIdentifier: testing
+      yamlPath: dist/yaml/$(stagingDockerRegistry)
 
   - task: DownloadSecureFile@1
     inputs:
@@ -86,26 +80,42 @@ jobs:
       kubeconfig: $(kubeconfig)
       namespace: $(namespace)
 
-  - template: k8s/render_yaml.yaml@ci_templates
+  - template: k8s/yaml/render.yaml@ci_templates
+    parameters:
+      namespace: $(namespace)
+      componentList: $(componentList)
+      dockerRegistry: $(stagingDockerRegistry)
+  
+  - template: k8s/yaml/publish.yaml@ci_templates
+    parameters:
+      yamlIdentifier: staging
+      yamlPath: dist/yaml/$(stagingDockerRegistry)
+
+  - template: k8s/yaml/render.yaml@ci_templates
     parameters:
       namespace: $(namespace)
       componentList: $(componentList)
       dockerRegistry: $(productionDockerRegistry)
   
-  - template: slack/build/finish.yaml@ci_templates
+  - template: k8s/yaml/publish.yaml@ci_templates
     parameters:
-      author: $(authorName)
-      repository: $(Build.Repository.Name)
-      branch: $(Build.SourceBranch)
-      commit: $(Build.SourceVersionMessage)
-      buildUrl: $(buildUrl)$(Build.BuildId)
-      slackWebhook: $(slackBuilds)
+      yamlIdentifier: production
+      yamlPath: dist/yaml/$(productionDockerRegistry)
+
+  # - template: slack/build/finish.yaml@ci_templates
+  #   parameters:
+  #     author: $(authorName)
+  #     repository: $(Build.Repository.Name)
+  #     branch: $(Build.SourceBranch)
+  #     commit: $(Build.SourceVersionMessage)
+  #     buildUrl: $(buildUrl)$(Build.BuildId)
+  #     slackWebhook: $(slackBuilds)
   
-  - template: slack/build/failed.yaml@ci_templates
-    parameters:
-      author: $(authorName)
-      repository: $(Build.Repository.Name)
-      branch: $(Build.SourceBranch)
-      commit: $(Build.SourceVersionMessage)
-      buildUrl: $(buildUrl)$(Build.BuildId)
-      slackWebhook: $(slackCIFailed)
+  # - template: slack/build/failed.yaml@ci_templates
+  #   parameters:
+  #     author: $(authorName)
+  #     repository: $(Build.Repository.Name)
+  #     branch: $(Build.SourceBranch)
+  #     commit: $(Build.SourceVersionMessage)
+  #     buildUrl: $(buildUrl)$(Build.BuildId)
+  #     slackWebhook: $(slackCIFailed)
