@@ -54,6 +54,11 @@ jobs:
       yamlIdentifier: testing
       yamlPath: dist/yaml/$(stagingDockerRegistry)
 
+  - template: k8s/yaml/namespace.yaml@ci_templates
+    parameters:
+      namespace: $(namespace)
+      yamlPath: dist/yaml/$(stagingDockerRegistry)
+
   - task: DownloadSecureFile@1
     inputs:
       secureFile: ci_kubeconfig.yaml
