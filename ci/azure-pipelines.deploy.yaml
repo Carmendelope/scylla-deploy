@@ -4,7 +4,7 @@ trigger:
 variables:
   - group: docker-registries
   - name: componentList
-    value: "device-api"
+    value: "scylla"
   - name: namespace
     value: $(Build.SourceVersion)-$(Build.BuildId)
   - name: kubeconfig
@@ -59,8 +59,8 @@ jobs:
     parameters:
       kubeconfig: $(kubeconfig)
       namespace: $(namespace)
-      resourceKind: deployment
-      resourceName: device-api
+      resourceKind: statefulset
+      resourceName: scylladb
 
   - template: k8s/ns/delete.yaml@ci_templates
     parameters:
