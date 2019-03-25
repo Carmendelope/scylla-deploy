@@ -2,12 +2,12 @@ parameters:
   kubeconfig: "$HOME/.kube/config"
   namespace: "nalej"
 
-resources:
-  repositories:
-    - repository: ci_templates
-      type: github
-      name: nalej/ci-templates
-      endpoint: nalej
+# resources:
+#   repositories:
+#     - repository: ci_templates
+#       type: github
+#       name: nalej/ci-templates
+#       endpoint: nalej
 
 steps:
   - template: k8s/resources/verify_creation.yaml@ci_templates
