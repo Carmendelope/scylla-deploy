@@ -9,5 +9,5 @@ steps:
       pipeline: 9
       buildVersionToDownload: "latestFromBranch"
       branchName: "refs/heads/master"
-      artifactName: nons-k8sYAMLfiles
+      artifactName: testing-k8sYAMLfiles
       downloadPath: ${{ parameters.downloadPath }}
