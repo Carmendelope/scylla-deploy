@@ -2,17 +2,29 @@ parameters:
   kubeconfig: "$HOME/.kube/config"
   namespace: "nalej"
 
-# resources:
-#   repositories:
-#     - repository: ci_templates
-#       type: github
-#       name: nalej/ci-templates
-#       endpoint: nalej
-
 steps:
-  - template: k8s/resources/verify_creation.yaml@ci_templates
-    parameters:
-      kubeconfig: ${{ parameters.kubeconfig }}
-      namespace: ${{ parameters.namespace }}
-      resourceKind: statefulset
-      resourceName: scylladb
+  - script: |
+      isOk=1
+      for (( i=0; i<36; i++ ))
+      do
+        expected=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get statefulset scylladb -o=jsonpath='{.spec.replicas}')
+        if [ $? -ne 0 ]; then
+          exit 1
+        fi
+        ready=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get statefulset scylladb -o=jsonpath='{.status.readyReplicas}')
+        if [ $? -ne 0 ]; then
+          exit 1
+        fi
+        echo "Expected: $expected"
+        echo "Ready: $ready"
+        if [ "$expected" == "$ready" ]; then
+          isOk=0
+          break
+        else
+          echo "Not ready yet, waiting 10 seconds"
+          echo ""
+          sleep 10
+        fi
+      done
+      exit $isOk
+    displayName: Verify kubernetes resources are running
