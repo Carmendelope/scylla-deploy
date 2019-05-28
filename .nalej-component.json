@@ -1,0 +1,9 @@
+{
+    "language": "none",
+    "application_list": [
+        "scylla"
+    ],
+    "tools": [
+        "k8s"
+    ]
+}
