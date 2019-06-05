@@ -4,27 +4,27 @@ parameters:
 
 steps:
   - script: |
-      isOk=1
       for (( i=0; i<36; i++ ))
       do
         expected=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get statefulset scylladb -o=jsonpath='{.spec.replicas}')
         if [ $? -ne 0 ]; then
-          exit 1
+          break
         fi
         ready=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get statefulset scylladb -o=jsonpath='{.status.readyReplicas}')
         if [ $? -ne 0 ]; then
-          exit 1
+          break
         fi
         echo "Expected: $expected"
         echo "Ready: $ready"
         if [ "$expected" == "$ready" ]; then
-          isOk=0
-          break
+          exit 0
         else
           echo "Not ready yet, waiting 10 seconds"
           echo ""
           sleep 10
         fi
       done
-      exit $isOk
+      
+      echo "##vso[task.logissue type=error]Error verifying scylla-deploy resources creation. Error CIE0018"
+      echo "##vso[task.complete result=Failed;]"
     displayName: Verify scylladb statefulset is ready
