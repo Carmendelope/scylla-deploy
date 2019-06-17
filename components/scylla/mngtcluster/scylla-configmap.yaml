@@ -49,6 +49,8 @@ data:
 
     write_request_timeout_in_ms: 2000
 
+    truncate_request_timeout_in_ms: 60000
+
     endpoint_snitch: SimpleSnitch
 
     rpc_address: localhost
