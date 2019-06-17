@@ -43,6 +43,10 @@ jobs:
       namespace: "__NPH_NAMESPACE"
       componentList: $(componentList)
       dockerRegistry: $(stagingDockerRegistry)
+
+  - script: |
+      sed -i -e 's/replicas: 3/replicas: 1/g' dist/yaml/$(stagingDockerRegistry)/mngtcluster/scylla-statefulset.yaml
+    displayName: Set ScyllaDB replicas to 1
   
   - template: k8s/statefulsets/claim_to_emptydirs.yaml@ci_templates
     parameters:
@@ -89,6 +93,10 @@ jobs:
     parameters:
       kubeconfig: $(kubeconfig)
       namespace: $(namespace)
+  
+  - script: |
+      sed -i -e 's/replicas: 1/replicas: 3/g' dist/yaml/$(stagingDockerRegistry)/mngtcluster/scylla-statefulset.yaml
+    displayName: Set ScyllaDB replicas to 3
 
   - template: k8s/yaml/render.yaml@ci_templates
     parameters:
