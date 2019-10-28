@@ -1,6 +1,13 @@
 trigger:
   - master
 
+schedules:
+- cron: "0 4 * * Sun"
+  displayName: Weekly 4:00 AM(UTC) Sunday master build
+  branches:
+    include:
+    - master
+
 variables:
   - group: common-vars
   - group: slack-webhooks
