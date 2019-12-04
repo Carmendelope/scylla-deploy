@@ -1,25 +1,8 @@
-trigger:
-  - master
-
-schedules:
-- cron: "0 4 * * Sun"
-  displayName: Weekly 4:00 AM(UTC) Sunday master build
-  branches:
-    include:
-    - master
-
-variables:
-  - group: common-vars
-  - group: slack-webhooks
-  - group: docker-registries
-  - name: componentList
-    value: "scylla"
-  - name: namespace
-    value: $(Build.SourceVersion)-$(Build.BuildId)
-  - name: kubeconfig
-    value: $(Agent.TempDirectory)/ci_kubeconfig.yaml
-  - name: authorName
-    value: ""
+variables: 
+  - template: variables/global.yaml@ci_templates
+  - template: variables/go.yaml@ci_templates
+  - template: variables/k8s.yaml@ci_templates
+  - template: variables/git.yaml@ci_templates
 
 resources:
   repositories:
@@ -27,112 +10,99 @@ resources:
       type: github
       name: nalej/ci-templates
       endpoint: nalej
+      ref: refs/tags/v1.0.5
 
-jobs:
-- job: DeployComponent
-  pool:
-    vmImage: 'Ubuntu-16.04'
-  
-  steps:
-  - template: misc/variables.yaml@ci_templates
+stages:
+- stage: 'SlackStart'
+  jobs:
+  - job: 
+    pool:
+      vmImage: 'ubuntu-latest'    
+    steps:
+    - template: slack/build/start.yaml@ci_templates
+      parameters:
+        author: $(authorName)
+        repository: $(Build.Repository.Name)
+        branch: $(Build.SourceBranch)
+        commit: $(Build.SourceVersionMessage)
+        buildUrl: $(buildUrl)$(Build.BuildId)
+        slackWebhook: $(slackBuilds)
 
-  - template: slack/build/start.yaml@ci_templates
-    parameters:
-      author: $(authorName)
-      repository: $(Build.Repository.Name)
-      branch: $(Build.SourceBranch)
-      commit: $(Build.SourceVersionMessage)
-      buildUrl: $(buildUrl)$(Build.BuildId)
-      slackWebhook: $(slackBuilds)
+- stage: 'ComponentDeploy'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  dependsOn: 'SlackStart'
+  jobs:
+  - job: 
+    pool:
+      vmImage: 'ubuntu-latest'  
+    steps:
+    - template: misc/nalej-component.yaml@ci_templates
 
-  - template: k8s/yaml/render.yaml@ci_templates
-    parameters:
-      namespace: "__NPH_NAMESPACE"
-      componentList: $(componentList)
-      dockerRegistry: $(stagingDockerRegistry)
-  
-  - template: k8s/statefulsets/claim_to_emptydirs.yaml@ci_templates
-    parameters:
-      yamlPath: $(system.defaultWorkingDirectory)/dist/yaml/$(stagingDockerRegistry)/mngtcluster
-      yamlFile: scylla-statefulset.yaml
+    - template: k8s/yaml/render.yaml@ci_templates
+      parameters:
+        namespace: "__NPH_NAMESPACE"
+        componentList: $(componentList)
+        environment: "staging"
+        version: edge
+
+    - template: k8s/statefulsets/claim_to_emptydirs.yaml@ci_templates
+      parameters:
+        yamlPath: $(system.defaultWorkingDirectory)/dist/yaml/staging/mngtcluster
+        yamlFile: scylla-statefulset.yaml
+
+    - template: k8s/yaml/namespace.yaml@ci_templates
+      parameters:
+        namespace: $(namespace)
+        yamlPath: dist/yaml/staging
+
+    - task: DownloadSecureFile@1
+      name: ci_kubeconfig
+      inputs:
+        secureFile: ci_kubeconfig.yaml
+      displayName: "Get K8S configuration file"
+
+    - template: k8s/ns/create.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        namespace: $(namespace)
+
+    - template: k8s/resources/create.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        platform: mngtcluster
+        environment: "staging"
     
-  - template: k8s/yaml/publish.yaml@ci_templates
-    parameters:
-      yamlIdentifier: testing
-      yamlPath: dist/yaml/$(stagingDockerRegistry)
+    - template: templates/verify_deploy.yaml
+      parameters:
+        kubeconfig: $(kubeconfig)
+        namespace: $(namespace)
 
-  - template: k8s/yaml/namespace.yaml@ci_templates
-    parameters:
-      namespace: $(namespace)
-      yamlPath: dist/yaml/$(stagingDockerRegistry)
+    - template: k8s/logs/archive.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        namespace: $(namespace)   
 
-  - task: DownloadSecureFile@1
-    inputs:
-      secureFile: ci_kubeconfig.yaml
-    displayName: "Get K8S configuration file"
-  
-  - template: k8s/ns/create.yaml@ci_templates
-    parameters:
-      kubeconfig: $(kubeconfig)
-      namespace: $(namespace)
+    - template: k8s/ns/delete.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        namespace: $(namespace)
 
-  - template: k8s/resources/create.yaml@ci_templates
-    parameters:
-      kubeconfig: $(kubeconfig)
-      platform: mngtcluster
-      dockerRegistry: $(stagingDockerRegistry)
-  
-  - template: templates/verify_deploy.yaml
-    parameters:
-      kubeconfig: $(kubeconfig)
-      namespace: $(namespace)
-  
-  - template: k8s/logs/archive.yaml@ci_templates
-    parameters:
-      kubeconfig: $(kubeconfig)
-      namespace: $(namespace)
+- stage: 'AssetPublish'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  dependsOn: 'ComponentDeploy'
+  jobs:
+  - job: 
+    pool:
+      vmImage: 'ubuntu-latest'  
+    steps:
+    - template: misc/nalej-component.yaml@ci_templates
+    - template: steps/assets-main.yaml@ci_templates
 
-  - template: k8s/ns/delete.yaml@ci_templates
-    parameters:
-      kubeconfig: $(kubeconfig)
-      namespace: $(namespace)
-
-  - template: k8s/yaml/render.yaml@ci_templates
-    parameters:
-      namespace: nalej
-      componentList: $(componentList)
-      dockerRegistry: $(stagingDockerRegistry)
-  
-  - template: k8s/yaml/publish.yaml@ci_templates
-    parameters:
-      yamlIdentifier: staging
-      yamlPath: dist/yaml/$(stagingDockerRegistry)
-
-  - template: k8s/yaml/render.yaml@ci_templates
-    parameters:
-      namespace: nalej
-      componentList: $(componentList)
-      dockerRegistry: $(productionDockerRegistry)
-  
-  - template: k8s/yaml/publish.yaml@ci_templates
-    parameters:
-      yamlIdentifier: production
-      yamlPath: dist/yaml/$(productionDockerRegistry)
-
-  - template: slack/build/finish.yaml@ci_templates
-    parameters:
-      author: $(authorName)
-      repository: $(Build.Repository.Name)
-      branch: $(Build.SourceBranch)
-      commit: $(Build.SourceVersionMessage)
-      buildUrl: $(buildUrl)$(Build.BuildId)
-      slackWebhook: $(slackBuilds)
-  
-  - template: slack/build/failed.yaml@ci_templates
-    parameters:
-      author: $(authorName)
-      repository: $(Build.Repository.Name)
-      branch: $(Build.SourceBranch)
-      commit: $(Build.SourceVersionMessage)
-      buildUrl: $(buildUrl)$(Build.BuildId)
-      slackWebhook: $(slackCIFailed)
+- stage: 'SlackFinish'
+  condition: always()
+  jobs:
+  - job: 
+    pool:
+      vmImage: 'ubuntu-latest'  
+    steps: 
+    - template: steps/slack-finish-main.yaml@ci_templates
