@@ -29,8 +29,7 @@ stages:
         slackWebhook: $(slackBuilds)
 
 - stage: 'ComponentDeploy'
-  #condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-  condition: always()
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn: 'SlackStart'
   jobs:
   - job: 
@@ -89,8 +88,7 @@ stages:
         namespace: $(namespace)
 
 - stage: 'AssetPublish'
-  #condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-  condition: always()
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn: 'ComponentDeploy'
   jobs:
   - job: 
