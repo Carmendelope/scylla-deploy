@@ -1,6 +1,3 @@
-include scripts/Makefile.common
-include scripts/Makefile.k8s
-include scripts/Makefile.none
 
 .DEFAULT_GOAL := all
 
@@ -9,3 +6,7 @@ docker-build:
 
 docker-push:
 	@echo "This component has no docker images"
+
+include scripts/Makefile.none
+include scripts/Makefile.k8s
+include scripts/Makefile.common
