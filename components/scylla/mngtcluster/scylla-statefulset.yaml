@@ -25,7 +25,7 @@ spec:
         - name: scylladb
           image: scylladb/scylla:3.0.0
           imagePullPolicy: Always
-          args: ["--seeds", "scylladb-0.scylladb.__NPH_NAMESPACE.svc.cluster.local"]
+          args: ["--seeds", "scylladb-0.scylladb.__NPH_NAMESPACE.svc.cluster.local, scylladb-1.scylladb.__NPH_NAMESPACE.svc.cluster.local, scylladb-2.scylladb.__NPH_NAMESPACE.svc.cluster.local"]
           ports:
             - containerPort: 7000
               name: intra-node
