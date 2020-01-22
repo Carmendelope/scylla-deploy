@@ -21,6 +21,15 @@ spec:
         cluster: management
         component: scylladb
     spec:
+      initContainers:
+        - name: wait-dns
+          image: busybox
+          command: ['sh', '-c', 'if [ "$POD_NAME" != "scylladb-0" ]; then until nslookup scylladb-0.scylladb.nalej.svc.cluster.local; do echo waiting for scylladb-0; sleep 2; done; fi;']
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
       containers:
         - name: scylladb
           image: scylladb/scylla:3.0.0
